@@ -1,7 +1,7 @@
 package kamil.kus.trivia;
 
 public interface Trivia {
-    boolean add(String playerName);
+    void add(String playerName);
 
     void roll(int roll);
 

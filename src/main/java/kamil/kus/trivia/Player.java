@@ -41,9 +41,7 @@ class Player {
     }
 
     public void move(int roll) {
-        setPlace(place() + roll);
-        if (place() > 11)
-            setPlace(place() - 12);
+        setPlace((place() + roll) % 12);
     }
 
     public boolean didPlayerWin() {
