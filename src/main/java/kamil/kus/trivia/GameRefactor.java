@@ -1,54 +1,39 @@
 package kamil.kus.trivia;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 
-public class GameRefactor implements Trivia{
-    ArrayList players = new ArrayList();
-    int[] places = new int[6];
-    int[] purses = new int[6];
+
+public class GameRefactor implements Trivia {
+    private final List<Player> playersObj = new ArrayList<>();
+    private final List<String> players = new ArrayList<>();
     boolean[] inPenaltyBox = new boolean[6];
 
-    LinkedList popQuestions = new LinkedList();
-    LinkedList scienceQuestions = new LinkedList();
-    LinkedList sportsQuestions = new LinkedList();
-    LinkedList rockQuestions = new LinkedList();
+    private final List<String> popQuestions = new ArrayList<>();
+    private final List<String> scienceQuestions = new ArrayList<>();
+    private final List<String> sportsQuestions = new ArrayList<>();
+    private final List<String> rockQuestions = new ArrayList<>();
 
     int currentPlayer = 0;
     boolean isGettingOutOfPenaltyBox;
 
     public GameRefactor() {
         for (int i = 0; i < 50; i++) {
-            popQuestions.addLast("Pop Question " + i);
-            scienceQuestions.addLast(("Science Question " + i));
-            sportsQuestions.addLast(("Sports Question " + i));
-            rockQuestions.addLast(createRockQuestion(i));
+            popQuestions.add("Pop Question " + i);
+            scienceQuestions.add(("Science Question " + i));
+            sportsQuestions.add(("Sports Question " + i));
+            rockQuestions.add("Rock Question " + i);
         }
     }
 
-    public String createRockQuestion(int index) {
-        return "Rock Question " + index;
-    }
-
-    public boolean isPlayable() {
-        return (howManyPlayers() >= 2);
-    }
-
     public boolean add(String playerName) {
-
-
+        playersObj.add(new Player(playerName));
         players.add(playerName);
-        places[howManyPlayers()] = 0;
-        purses[howManyPlayers()] = 0;
-        inPenaltyBox[howManyPlayers()] = false;
+        inPenaltyBox[playersObj.size()] = false;
 
         System.out.println(playerName + " was added");
         System.out.println("They are player number " + players.size());
         return true;
-    }
-
-    public int howManyPlayers() {
-        return players.size();
     }
 
     public void roll(int roll) {
@@ -60,27 +45,25 @@ public class GameRefactor implements Trivia{
                 isGettingOutOfPenaltyBox = true;
 
                 System.out.println(players.get(currentPlayer) + " is getting out of the penalty box");
-                places[currentPlayer] = places[currentPlayer] + roll;
-                if (places[currentPlayer] > 11) places[currentPlayer] = places[currentPlayer] - 12;
+                playersObj.get(currentPlayer).setPlace(playersObj.get(currentPlayer).place() + roll);
+                if (playersObj.get(currentPlayer).place() > 11)
+                    playersObj.get(currentPlayer).setPlace(playersObj.get(currentPlayer).place() - 12);
 
-                System.out.println(players.get(currentPlayer)
-                        + "'s new location is "
-                        + places[currentPlayer]);
+                System.out.println(playersObj.get(currentPlayer).name() + "'s new location is " + playersObj.get(currentPlayer).place());
                 System.out.println("The category is " + currentCategory());
                 askQuestion();
             } else {
-                System.out.println(players.get(currentPlayer) + " is not getting out of the penalty box");
+                System.out.println(playersObj.get(currentPlayer).name() + " is not getting out of the penalty box");
                 isGettingOutOfPenaltyBox = false;
             }
 
         } else {
 
-            places[currentPlayer] = places[currentPlayer] + roll;
-            if (places[currentPlayer] > 11) places[currentPlayer] = places[currentPlayer] - 12;
+            playersObj.get(currentPlayer).setPlace(playersObj.get(currentPlayer).place() + roll);
+            if (playersObj.get(currentPlayer).place() > 11)
+                playersObj.get(currentPlayer).setPlace(playersObj.get(currentPlayer).place() - 12);
 
-            System.out.println(players.get(currentPlayer)
-                    + "'s new location is "
-                    + places[currentPlayer]);
+            System.out.println(playersObj.get(currentPlayer).name() + "'s new location is " + playersObj.get(currentPlayer).place());
             System.out.println("The category is " + currentCategory());
             askQuestion();
         }
@@ -88,38 +71,30 @@ public class GameRefactor implements Trivia{
     }
 
     private void askQuestion() {
-        if (currentCategory() == "Pop")
-            System.out.println(popQuestions.removeFirst());
-        if (currentCategory() == "Science")
-            System.out.println(scienceQuestions.removeFirst());
-        if (currentCategory() == "Sports")
-            System.out.println(sportsQuestions.removeFirst());
-        if (currentCategory() == "Rock")
-            System.out.println(rockQuestions.removeFirst());
+        switch (currentCategory()) {
+            case "Pop" -> System.out.println(popQuestions.remove(0));
+            case "Science" -> System.out.println(scienceQuestions.remove(0));
+            case "Sports" -> System.out.println(sportsQuestions.remove(0));
+            case "Rock" -> System.out.println(rockQuestions.remove(0));
+        }
     }
 
 
     private String currentCategory() {
-        if (places[currentPlayer] == 0) return "Pop";
-        if (places[currentPlayer] == 4) return "Pop";
-        if (places[currentPlayer] == 8) return "Pop";
-        if (places[currentPlayer] == 1) return "Science";
-        if (places[currentPlayer] == 5) return "Science";
-        if (places[currentPlayer] == 9) return "Science";
-        if (places[currentPlayer] == 2) return "Sports";
-        if (places[currentPlayer] == 6) return "Sports";
-        if (places[currentPlayer] == 10) return "Sports";
-        return "Rock";
+        if (playersObj.get(currentPlayer).place() % 4 == 0) return QuestionType.POP.getCategoryName();
+        if (playersObj.get(currentPlayer).place() % 4 == 1) return QuestionType.SCIENCE.getCategoryName();
+        if (playersObj.get(currentPlayer).place() % 4 == 2) return QuestionType.SPORT.getCategoryName();
+        return QuestionType.ROCK.getCategoryName();
     }
 
     public boolean wasCorrectlyAnswered() {
         if (inPenaltyBox[currentPlayer]) {
             if (isGettingOutOfPenaltyBox) {
                 System.out.println("Answer was correct!!!!");
-                purses[currentPlayer]++;
-                System.out.println(players.get(currentPlayer)
+                playersObj.get(currentPlayer).addCoin();
+                System.out.println(playersObj.get(currentPlayer).name()
                         + " now has "
-                        + purses[currentPlayer]
+                        + playersObj.get(currentPlayer).purses()
                         + " Gold Coins.");
 
                 boolean winner = didPlayerWin();
@@ -137,11 +112,8 @@ public class GameRefactor implements Trivia{
         } else {
 
             System.out.println("Answer was corrent!!!!");
-            purses[currentPlayer]++;
-            System.out.println(players.get(currentPlayer)
-                    + " now has "
-                    + purses[currentPlayer]
-                    + " Gold Coins.");
+            playersObj.get(currentPlayer).addCoin();
+            System.out.println(playersObj.get(currentPlayer).name() + " now has " + playersObj.get(currentPlayer).purses() + " Gold Coins.");
 
             boolean winner = didPlayerWin();
             currentPlayer++;
@@ -163,6 +135,6 @@ public class GameRefactor implements Trivia{
 
 
     private boolean didPlayerWin() {
-        return !(purses[currentPlayer] == 6);
+        return !(playersObj.get(currentPlayer).purses() == 6);
     }
 }
