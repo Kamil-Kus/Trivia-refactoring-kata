@@ -4,6 +4,7 @@ class Player {
     private final String name;
     private int place;
     private int purses;
+    boolean inPenaltyBox = false;
 
     Player(String name) {
         this.name = name;
@@ -30,4 +31,23 @@ class Player {
     public int purses() {
         return purses;
     }
+
+    public boolean isInPenaltyBox() {
+        return inPenaltyBox;
+    }
+
+    public void moveInToPenaltyBox() {
+        this.inPenaltyBox = true;
+    }
+
+    public void move(int roll) {
+        setPlace(place() + roll);
+        if (place() > 11)
+            setPlace(place() - 12);
+    }
+
+    public boolean didPlayerWin() {
+        return !(purses() == 6);
+    }
+
 }
